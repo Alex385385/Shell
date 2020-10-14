@@ -10,8 +10,8 @@ void changeDirectory() {
 
 //pwd - Present Working directory
 //Use getcwd()
-void printCurrentDirectory() {
-
+void printCurrentDirectory(char[] s) {
+    print(getcwd(s,100) + "\n");
 }
 
 //mkdir - Make a directory (Alerts if already exists)
