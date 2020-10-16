@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <dirent.h>
 
 //cd - Change directory
@@ -10,8 +11,8 @@ void changeDirectory() {
 
 //pwd - Present Working directory
 //Use getcwd()
-void printCurrentDirectory(char[] s) {
-    print("/n" + getcwd(s,100) + "\n");
+void printCurrentDirectory(char* s) {
+    printf("/n" + getcwd(s,100) + "\n");
 }
 
 //mkdir - Make a directory (Alerts if already exists)
@@ -40,27 +41,27 @@ void copyFile() {
 
 //exit
 void exitCommand() {
-    print("/nEXIT/n");
+    printf("/nEXIT/n");
     exit(0);
 }
 
-void readCommand(char* cmd, char* args) {
+void readCommand(int cmd, char* args) {
     if (sizeof(cmd) == NULL) {
         //call method to restart newline
     }
     
     switch (cmd) {
-    case "cd":
+    case 1:
         changeDirectory(args);
-    case "pwd":
+    case 2:
         printCurrentDirectory();
-    case "mkdir":
+    case 3:
         makeDirectory(args);
-    case "rmdir":
+    case 4:
         removeDirectory(args);
-    case "ls":
+    case 5:
         lsCommand();
-    case "cp":
+    case 6:
         copyFile(args);
     default:
         break;
