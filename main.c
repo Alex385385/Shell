@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <stdlib.h>
 
 enum commands{cd, pwd, mkdir, rmdir, ls, cp};
 
@@ -36,13 +37,34 @@ void lsCommand() {
 
 //cp - Copy contents from one file to another
 //Use fgetc() and fputc()
-void copyFile() {
+void copyFile(char* parentName, char* childName) {
+    FILE *parentFile, *childFile;
 
+    parentFile = fopen(parentName, "rb");
+    if (parentFile == NULL) {
+        perror("Error ");
+        return;
+    }
+
+    childFile = fopen(childName, "wb");
+
+    if(childFile == NULL) {
+        perror("Error ");
+        return;
+    }
+
+    fseek(parentFile,0, SEEK_END);
+    int fileLength = (int)ftell(parentFile);
+    fseek(parentFile, 0, SEEK_SET);
+
+    for(int i = 0; i < fileLength; i++) {
+        fputc(fgetc(parentFile), childFile);
+    }
 }
 
 //exit
 void exitCommand() {
-    print("/nEXIT/n");
+    printf("/nEXIT/n");
     exit(0);
 }
 
