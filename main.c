@@ -11,7 +11,7 @@ void changeDirectory() {
 //pwd - Present Working directory
 //Use getcwd()
 void printCurrentDirectory(char[] s) {
-    print(getcwd(s,100) + "\n");
+    print("/n" + getcwd(s,100) + "\n");
 }
 
 //mkdir - Make a directory (Alerts if already exists)
@@ -44,26 +44,27 @@ void exitCommand() {
     exit(0);
 }
 
-void readCommand(char* cmd) {
+void readCommand(char* cmd, char* args) {
+    if (sizeof(cmd) == NULL) {
+        //call method to restart newline
+    }
+    
     switch (cmd) {
     case "cd":
-        changeDirectory();
+        changeDirectory(args);
     case "pwd":
         printCurrentDirectory();
     case "mkdir":
-        makeDirectory();
+        makeDirectory(args);
     case "rmdir":
-        removeDirectory();
+        removeDirectory(args);
     case "ls":
         lsCommand();
     case "cp":
-        copyFile();
+        copyFile(args);
     default:
         break;
-    }
-
-
-    }
+    } 
 }
 
 //
