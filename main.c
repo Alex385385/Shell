@@ -38,6 +38,34 @@ void copyFile() {
 
 }
 
+//exit
+void exitCommand() {
+    print("/nEXIT/n");
+    exit(0);
+}
+
+void readCommand(char* cmd) {
+    switch (cmd) {
+    case "cd":
+        changeDirectory();
+    case "pwd":
+        printCurrentDirectory();
+    case "mkdir":
+        makeDirectory();
+    case "rmdir":
+        removeDirectory();
+    case "ls":
+        lsCommand();
+    case "cp":
+        copyFile();
+    default:
+        break;
+    }
+
+
+    }
+}
+
 //
 void runExecutable() {
 
