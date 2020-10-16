@@ -2,16 +2,18 @@
 #include <unistd.h>
 #include <dirent.h>
 
+enum commands{cd, pwd, mkdir, rmdir, ls, cp};
+
 //cd - Change directory
 //Use chdir()
 void changeDirectory() {
-    fafkldsanfkldsnflklk
+
 }
 
 //pwd - Present Working directory
 //Use getcwd()
 void printCurrentDirectory(char[] s) {
-    print("/n" + getcwd(s,100) + "\n");
+    printf("/n" + getcwd(s,100) + "\n");
 }
 
 //mkdir - Make a directory (Alerts if already exists)
@@ -48,7 +50,7 @@ void readCommand(char* cmd, char* args) {
     if (sizeof(cmd) == NULL) {
         //call method to restart newline
     }
-    
+     
     switch (cmd) {
     case "cd":
         changeDirectory(args);
