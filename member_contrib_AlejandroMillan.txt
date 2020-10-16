@@ -1,0 +1,4 @@
+Alejandro's contributions:
+
+*Initialized a GitHub Repository shared with teammates
+*Created initial commits for main class and Makefile
