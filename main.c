@@ -24,7 +24,7 @@ void changeDirectory(char* dir) {
     chdir(dir);
 
     // display new current dir
-    ptr = getcwd(s, 100);
+    ptr = getcwd(s, sizeof(s));
 
     free(s);
     free(ptr);
@@ -35,7 +35,7 @@ void changeDirectory(char* dir) {
 void printCurrentDirectory() {
 
     char s[100];
-    printf("%s\n", getcwd(s, 100));
+    printf("%s\n", getcwd(s, sizeof(s)));
 
     free(s);
 }
