@@ -26,7 +26,6 @@ void changeDirectory(char* dir) {
     // display new current dir
     ptr = getcwd(s, sizeof(s));
 
-    free(s);
     free(ptr);
 }
 
@@ -37,7 +36,6 @@ void printCurrentDirectory() {
     char s[100];
     printf("%s\n", getcwd(s, sizeof(s)));
 
-    free(s);
 }
 
 //mkdir - Make a directory (Alerts if already exists)
