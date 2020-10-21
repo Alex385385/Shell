@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,7 +36,6 @@ void printCurrentDirectory() {
 
     char s[100];
     printf("%s\n", getcwd(s, sizeof(s)));
-
 }
 
 //mkdir - Make a directory (Alerts if already exists)
