@@ -89,27 +89,49 @@ void exitCommand() {
     exit(0);
 }
 
-void readCommand(char* cmd, char* args) {
-//     if (sizeof(cmd) == NULL) {
-//         //call method to restart newline
-//     }
+void readCommand(char** cmd) { //char** array of strings
+    int numOfCmds = 7;
+    int ownCmd = 0;
+    char* cmdList[numOfCmds];
+
+    cmdList[0] = "cd";
+    cmdList[1] = "pwd";
+    cmdList[2] = "mkdir";
+    cmdList[3] = "rmdir";
+    cmdList[4] = "ls";
+    cmdList[5] = "cp";
+    cmdList[6] = "exit";
+
+
+    if (sizeof(cmd) == NULL) {
+        //call method to restart newline
+    }
+
+    for (int i=0; i<numOfCmds; i++){
+        if (strcmp(cmd[0], cmdList[i]) == 0){
+            ownCmd = i + 1;
+            break;
+        }
+    }
      
-//     switch (cmd) {
-//     case "cd":
-//         changeDirectory(args);
-//     case "pwd":
-//         printCurrentDirectory();
-//     case "mkdir":
-//         makeDirectory(args);
-//     case "rmdir":
-//         removeDirectory(args);
-//     case "ls":
-//         lsCommand();
-//     case "cp":
-//         copyFile(args);
-//     default:
-//         break;
-//     } 
+    switch (ownCmd) {
+    case 1:
+        changeDirectory(cmd[1]); //cmd[1] should have the argument
+    case 2:
+        printCurrentDirectory();
+    case 3:
+        makeDirectory(cmd[1]);
+    case 4:
+        removeDirectory(cmd[1]);
+    case 5:
+        lsCommand();
+    case 6:
+        copyFile(cmd[1]);
+    case 7:
+        exitCommand();
+    default:
+        break;
+    } 
 }
 
 //
