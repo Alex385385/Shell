@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gtk-3.0/gtk/gtk.h> 
-#include <gtk-3.0/gtk/gtkx.h> 
+//#include <gtk/gtk.h>
+#include <gtk-3.0/gtk/gtk.h>
+#include <gtk-3.0/gtk/gtkx.h>
 #include <signal.h>
 #include <math.h>
 #include <ctype.h>
@@ -36,7 +38,6 @@ void printCurrentDirectory() {
 
     char s[100];
     printf("%s\n", getcwd(s, sizeof(s)));
-
 }
 
 //mkdir - Make a directory (Alerts if already exists)
@@ -53,8 +54,25 @@ void removeDirectory() {
 
 //ls - List contents of pwd
 //Look at dirent.h library
-void lsCommand() {
+void lsCommand(char* arg) {
+    DIR *directory;
+    directory = opendir(arg);
+    if(!directory) {
+        perror(arg);
+        return;
+    }
+    struct dirent *dp;
 
+
+    if(directory) {
+        while((dp = readdir(directory)) != NULL) {
+            if(strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0) {
+                continue;
+            }
+           // printf("%s\n", dp->d_name);
+        }
+    }
+    closedir(directory);
 }
 
 //cp - Copy contents from one file to another
@@ -90,27 +108,49 @@ void exitCommand() {
     exit(0);
 }
 
-void readCommand(char* cmd, char* args) {
-//     if (sizeof(cmd) == NULL) {
-//         //call method to restart newline
-//     }
+void readCommand(char** cmd) { //char** array of strings
+    int numOfCmds = 7;
+    int ownCmd = 0;
+    char* cmdList[numOfCmds];
+
+    cmdList[0] = "cd";
+    cmdList[1] = "pwd";
+    cmdList[2] = "mkdir";
+    cmdList[3] = "rmdir";
+    cmdList[4] = "ls";
+    cmdList[5] = "cp";
+    cmdList[6] = "exit";
+
+
+    if (sizeof(cmd) == NULL) {
+        //call method to restart newline
+    }
+
+    for (int i=0; i<numOfCmds; i++){
+        if (strcmp(cmd[0], cmdList[i]) == 0){
+            ownCmd = i + 1;
+            break;
+        }
+    }
      
-//     switch (cmd) {
-//     case "cd":
-//         changeDirectory(args);
-//     case "pwd":
-//         printCurrentDirectory();
-//     case "mkdir":
-//         makeDirectory(args);
-//     case "rmdir":
-//         removeDirectory(args);
-//     case "ls":
-//         lsCommand();
-//     case "cp":
-//         copyFile(args);
-//     default:
-//         break;
-//     } 
+    switch (ownCmd) {
+    case 1:
+        changeDirectory(cmd[1]); //cmd[1] should have the argument
+    case 2:
+        printCurrentDirectory();
+    case 3:
+        makeDirectory(cmd[1]);
+    case 4:
+        removeDirectory(cmd[1]);
+    case 5:
+        lsCommand(cmd[1]);
+    case 6:
+        //copyFile(cmd[1]);
+    case 7:
+        exitCommand();
+    default:
+        break;
+    } 
 }
 
 //
@@ -129,7 +169,7 @@ int main(int argc, char *argv[] ) {
 //----------------------------------------------------------------
 
     //any gtk method will return an address of the data structure.
-    //Thus, to reference the data structure and not the address 
+    //Thus, to reference the data structure and not the address
     //of the data structure, pointers are used to point to the
     //actual data structure
 
@@ -146,5 +186,8 @@ int main(int argc, char *argv[] ) {
 
     gtk_widget_show(window);
     gtk_main();
-    return 0; 
+
+
+
+    return 0;
 }
