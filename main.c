@@ -4,8 +4,9 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gtk-3.0/gtk/gtk.h> 
-#include <gtk-3.0/gtk/gtkx.h> 
+//#include <gtk/gtk.h>
+#include <gtk-3.0/gtk/gtk.h>
+#include <gtk-3.0/gtk/gtkx.h>
 #include <signal.h>
 #include <math.h>
 #include <ctype.h>
@@ -53,7 +54,20 @@ void removeDirectory() {
 //ls - List contents of pwd
 //Look at dirent.h library
 void lsCommand() {
+    DIR *directory;
+    struct dirent *dp;
 
+    directory = opendir(".");
+
+    if(directory) {
+        while((dp = readdir(directory)) != NULL) {
+            if(strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0) {
+                continue;
+            }
+  //          printf("%s\n", dp->d_name);
+        }
+    }
+    closedir(directory);
 }
 
 //cp - Copy contents from one file to another
@@ -126,7 +140,7 @@ void readCommand(char** cmd) { //char** array of strings
     case 5:
         lsCommand();
     case 6:
-        copyFile(cmd[1]);
+        //copyFile(cmd[1]);
     case 7:
         exitCommand();
     default:
@@ -150,7 +164,7 @@ int main(int argc, char *argv[] ) {
 //----------------------------------------------------------------
 
     //any gtk method will return an address of the data structure.
-    //Thus, to reference the data structure and not the address 
+    //Thus, to reference the data structure and not the address
     //of the data structure, pointers are used to point to the
     //actual data structure
 
@@ -161,9 +175,9 @@ int main(int argc, char *argv[] ) {
 
     textfield = GTK_WIDGET(gtk_builder_get_object(builder, "terminal_textfield"));
 
-    
+
 
     gtk_widget_show(window);
     gtk_main();
-    return 0; 
+    return 0;
 }
