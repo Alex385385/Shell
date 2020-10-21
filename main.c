@@ -12,6 +12,7 @@
 
 GtkWidget *window;
 GtkWidget *textfield;
+GtkTextBuffer *textBuffer;
 GtkBuilder *builder;
 
 //cd - Change directory
@@ -139,7 +140,9 @@ int main(int argc, char *argv[] ) {
 
     textfield = GTK_WIDGET(gtk_builder_get_object(builder, "terminal_textfield"));
 
-    
+    textBuffer = gtk_text_view_get_buffer( GTK_TEXT_VIEW(textfield));
+
+    //gtk_text_buffer_insert_with_tags ()
 
     gtk_widget_show(window);
     gtk_main();
