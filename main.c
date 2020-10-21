@@ -16,7 +16,9 @@ GtkWidget *window;
 GtkWidget *textfield;
 GtkTextBuffer *textBuffer;
 GtkBuilder *builder;
-
+GtkTextTag *textTag;
+GtkTextIter start, end;
+GtkTextIter iter;
 //cd - Change directory
 //Use chdir()
 void changeDirectory(char* dir) {
@@ -122,7 +124,7 @@ void readCommand(char** cmd) { //char** array of strings
     cmdList[6] = "exit";
 
 
-    if (sizeof(cmd) == NULL) {
+    if (sizeof(cmd) == 0) {
         //call method to restart newline
     }
 
@@ -161,6 +163,11 @@ void runExecutable() {
 //char *argv[] is an array of char pointers
 
 int main(int argc, char *argv[] ) {
+    
+    char s[100];
+    char* dir = getcwd(s, sizeof(s));
+
+    strcat(dir, ":");
 
     gtk_init(&argc, &argv);
 
@@ -182,12 +189,15 @@ int main(int argc, char *argv[] ) {
 
     textBuffer = gtk_text_view_get_buffer( GTK_TEXT_VIEW(textfield));
 
-    //gtk_text_buffer_insert_with_tags ()
+    gtk_text_buffer_create_tag(textBuffer, "editability", "editable", False, NULL);
+
+    
+    gtk_text_buffer_get_iter_at_offset(textBuffer, &iter, 0);
+
+    gtk_text_buffer_insert_with_tags_by_name(textBuffer, &iter, dir, -1, "editability", NULL);
 
     gtk_widget_show(window);
     gtk_main();
-
-
 
     return 0;
 }
