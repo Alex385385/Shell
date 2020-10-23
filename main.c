@@ -19,6 +19,7 @@ GtkBuilder *builder;
 GtkTextTag *textTag;
 GtkTextIter start, end;
 GtkTextIter iter;
+char *command;
 //cd - Change directory
 //Use chdir()
 void changeDirectory(char* dir) {
@@ -63,6 +64,10 @@ void lsCommand(char* arg) {
         perror(arg);
         return;
     }
+    if(directory == NULL){
+        directory = opendir(".");
+    }
+
     struct dirent *dp;
 
 
@@ -156,11 +161,13 @@ void readCommand(char** cmd) { //char** array of strings
 }
 
 //
-void runExecutable() {
+void runExecutable(GtkWidget *widge) {
 
 }
 
 //char *argv[] is an array of char pointers
+
+gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
 int main(int argc, char *argv[] ) {
     
@@ -193,11 +200,29 @@ int main(int argc, char *argv[] ) {
 
     
     gtk_text_buffer_get_iter_at_offset(textBuffer, &iter, 0);
+    
 
     gtk_text_buffer_insert_with_tags_by_name(textBuffer, &iter, dir, -1, "editability", NULL);
+
+
+    g_signal_connect(G_OBJECT(window), "key-press-event", G_CALLBACK(keyPressed), NULL);
 
     gtk_widget_show(window);
     gtk_main();
 
     return 0;
+}
+
+gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data){
+    if(event->keyval == GDK_KEY_Return){
+
+        gtk_text_buffer_get_start_iter(textBuffer, &start);
+        gtk_text_buffer_get_end_iter(textBuffer, &end);
+        
+        command = gtk_text_buffer_get_text(textBuffer,&start, &end , False);
+
+        
+        return True;
+    }
+    return False;
 }

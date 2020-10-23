@@ -17,7 +17,6 @@
         <property name="right_margin">4</property>
         <property name="top_margin">4</property>
         <property name="bottom_margin">4</property>
-        <property name="overwrite">True</property>
         <property name="input_purpose">terminal</property>
         <property name="monospace">True</property>
       </object>
