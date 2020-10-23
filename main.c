@@ -11,6 +11,7 @@
 #include <math.h>
 #include <ctype.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 
 GtkWidget *window;
 GtkWidget *textfield;
@@ -35,7 +36,7 @@ void changeDirectory(char* dir) {
 }
 
 //pwd - Present Working directory
-// Use getcwd()
+//Use getcwd()
 void printCurrentDirectory() {
 
     char s[100];
@@ -44,8 +45,12 @@ void printCurrentDirectory() {
 
 //mkdir - Make a directory (Alerts if already exists)
 //Use mkdir()
-void makeDirectory() {
-
+void makeDirectory(char* directoryPath) {
+    int status; // status = 0 if successful
+    status = mkdir(directoryPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); //includes read/write/search permissions
+    if(status != 0) {
+        perror("Error: ");
+    }
 }
 
 //rmdir - Remove the directory (Alerts if no such file or directory)
@@ -110,7 +115,7 @@ void exitCommand() {
     exit(0);
 }
 
-void readCommand(char** cmd) { //char** array of strings
+void readCommand(char** cmdList) { //char** array of strings
     int numOfCmds = 7;
     int ownCmd = 0;
     char* cmdList[numOfCmds];
@@ -124,12 +129,12 @@ void readCommand(char** cmd) { //char** array of strings
     cmdList[6] = "exit";
 
 
-    if (sizeof(cmd) == 0) {
+    if (sizeof(cmdList) == 0) {
         //call method to restart newline
     }
 
     for (int i=0; i<numOfCmds; i++){
-        if (strcmp(cmd[0], cmdList[i]) == 0){
+        if (strcmp(cmdList[0], cmdList[i]) == 0){
             ownCmd = i + 1;
             break;
         }
@@ -137,17 +142,17 @@ void readCommand(char** cmd) { //char** array of strings
      
     switch (ownCmd) {
     case 1:
-        changeDirectory(cmd[1]); //cmd[1] should have the argument
+        changeDirectory(cmdList[1]); //cmdList[1] should have the argument
     case 2:
         printCurrentDirectory();
     case 3:
-        makeDirectory(cmd[1]);
+        makeDirectory(cmdList[1]);
     case 4:
-        removeDirectory(cmd[1]);
+        removeDirectory(cmdList[1]);
     case 5:
-        lsCommand(cmd[1]);
+        lsCommand(cmdList[1]);
     case 6:
-        //copyFile(cmd[1]);
+        copyFile(cmdList[1], cmdList[2]);
     case 7:
         exitCommand();
     default:
