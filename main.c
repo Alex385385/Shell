@@ -11,6 +11,10 @@
 #include <math.h>
 #include <ctype.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include<sys/wait.h>
+
 
 GtkWidget *window;
 GtkWidget *textfield;
@@ -45,14 +49,21 @@ void printCurrentDirectory() {
 
 //mkdir - Make a directory (Alerts if already exists)
 //Use mkdir()
-void makeDirectory() {
-
+void makeDirectory(char* name) {
+    int value;
+    value = mkdir(name, 0777);
+    if(value == -1) {
+        printf("%s\n", strerror(errno));
+    }
 }
 
 //rmdir - Remove the directory (Alerts if no such file or directory)
 //Use rmdir()
-void removeDirectory() {
-
+void removeDirectory(char* dirName) {
+    int status = rmdir(dirName);
+    if(status == -1) {
+        printf("%s\n", strerror(errno));
+    }
 }
 
 //ls - List contents of pwd
@@ -115,6 +126,21 @@ void exitCommand() {
     exit(0);
 }
 
+//
+void runExecutable(char* execName) {
+    char *args[] = {execName, NULL};
+
+    pid_t pid = fork();
+
+    if(pid == -1) {
+        printf("%s\n", strerror(errno));
+    } else if(pid == 0) {
+        execvp(args[0], args);
+    } else {
+        wait(NULL);
+    }
+}
+
 void readCommand(char** cmd) { //char** array of strings
     int numOfCmds = 7;
     int ownCmd = 0;
@@ -160,10 +186,6 @@ void readCommand(char** cmd) { //char** array of strings
     } 
 }
 
-//
-void runExecutable(GtkWidget *widge) {
-
-}
 
 //char *argv[] is an array of char pointers
 

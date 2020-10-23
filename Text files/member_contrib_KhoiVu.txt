@@ -3,3 +3,4 @@ Khoi's contributions:
 *Researched shell commands
 *Researched GUI implementation in C
 *Implemented GUI and the layout of the program
+*lsCommand() method and changeDirectory() method
