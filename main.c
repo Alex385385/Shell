@@ -13,6 +13,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include<sys/wait.h>
+
 
 GtkWidget *window;
 GtkWidget *textfield;
@@ -119,6 +121,21 @@ void exitCommand() {
     exit(0);
 }
 
+//
+void runExecutable(char* execName) {
+    char *args[] = {execName, NULL};
+
+    pid_t pid = fork();
+
+    if(pid == -1) {
+        printf("%s\n", strerror(errno));
+    } else if(pid == 0) {
+        execvp(args[0], args);
+    } else {
+        wait(NULL);
+    }
+}
+
 void readCommand(char** cmd) { //char** array of strings
     int numOfCmds = 7;
     int ownCmd = 0;
@@ -164,10 +181,6 @@ void readCommand(char** cmd) { //char** array of strings
     } 
 }
 
-//
-void runExecutable() {
-
-}
 
 //char *argv[] is an array of char pointers
 
