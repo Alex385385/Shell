@@ -11,6 +11,7 @@
 #include <math.h>
 #include <ctype.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 
 GtkWidget *window;
 GtkWidget *textfield;
@@ -44,8 +45,30 @@ void printCurrentDirectory() {
 
 //mkdir - Make a directory (Alerts if already exists)
 //Use mkdir()
-void makeDirectory() {
+void makeDirectory(char* name) {
+    int value;
+    DIR *directory;
+    struct dirent *dp;
 
+    directory = opendir(".");
+
+    if(!directory) {
+        perror("Error");
+        closedir(directory);
+        return;
+    }
+    else {
+        while((dp = readdir(directory)) != NULL) {
+            if(strcmp(dp->d_name, name) == 0) {
+                perror("File exists");
+                closedir(directory);
+                return;
+            }
+        }
+    }
+    closedir(directory);
+
+    value = mkdir(name, 0777);
 }
 
 //rmdir - Remove the directory (Alerts if no such file or directory)
