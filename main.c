@@ -12,6 +12,7 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 GtkWidget *window;
 GtkWidget *textfield;
@@ -73,8 +74,11 @@ void makeDirectory(char* name) {
 
 //rmdir - Remove the directory (Alerts if no such file or directory)
 //Use rmdir()
-void removeDirectory() {
-
+void removeDirectory(char* dirName) {
+    int status = rmdir(dirName);
+    if(status == -1) {
+        printf("%s\n", strerror(errno));
+    }
 }
 
 //ls - List contents of pwd
