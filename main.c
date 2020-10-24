@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
+#include <glib.h>
 //#include <gtk/gtk.h>
 #include <gtk-3.0/gtk/gtk.h>
 #include <gtk-3.0/gtk/gtkx.h>
@@ -13,7 +14,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include<sys/wait.h>
+#include <sys/wait.h>
 
 
 GtkWidget *window;
@@ -190,6 +191,7 @@ void readCommand(char** cmd) { //char** array of strings
 //char *argv[] is an array of char pointers
 
 gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data);
+void displayAfterEnterKey();
 
 int main(int argc, char *argv[] ) {
     
@@ -226,8 +228,7 @@ int main(int argc, char *argv[] ) {
 
     gtk_text_buffer_insert_with_tags_by_name(textBuffer, &iter, dir, -1, "editability", NULL);
 
-
-    g_signal_connect(G_OBJECT(window), "key-press-event", G_CALLBACK(keyPressed), NULL);
+    g_signal_connect(textfield, "key-press-event", G_CALLBACK(keyPressed), NULL);
 
     gtk_widget_show(window);
     gtk_main();
@@ -236,15 +237,28 @@ int main(int argc, char *argv[] ) {
 }
 
 gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data){
-    if(event->keyval == GDK_KEY_Return){
 
+    if (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
+    {
         gtk_text_buffer_get_start_iter(textBuffer, &start);
         gtk_text_buffer_get_end_iter(textBuffer, &end);
-        
+        gtk_text_buffer_apply_tag_by_name(textBuffer, "editability", &start, &end);
         command = gtk_text_buffer_get_text(textBuffer,&start, &end , False);
 
-        
+        displayAfterEnterKey(&end);
+       
         return True;
     }
+
     return False;
 }
+
+
+void displayAfterEnterKey(GtkTextIter *iter){
+    char s[100];
+    char* dir = getcwd(s, sizeof(s));
+    strcat(dir, ":");
+    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
+    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dir, -1, "editability", NULL);
+}
+

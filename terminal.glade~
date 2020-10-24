@@ -10,16 +10,7 @@
       <placeholder/>
     </child>
     <child>
-      <object class="GtkTextView" id="terminal_textfield">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="left_margin">4</property>
-        <property name="right_margin">4</property>
-        <property name="top_margin">4</property>
-        <property name="bottom_margin">4</property>
-        <property name="input_purpose">terminal</property>
-        <property name="monospace">True</property>
-      </object>
+      <placeholder/>
     </child>
   </object>
 </interface>
