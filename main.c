@@ -208,10 +208,13 @@ void readCommand(char** cmd) { //char** array of strings
         break;
     case 6:
         copyFile(cmd[1], cmd[2]);
+        break;
     case 7:
         runExecutable(cmd[1]);
+        break;
     case 8:
         exitCommand();
+        break;
     default:
         break;
     } 
