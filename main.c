@@ -24,7 +24,7 @@ GtkBuilder *builder;
 GtkTextTag *textTag;
 GtkTextIter start, end;
 GtkTextIter iter;
-char *command;
+char *command, cmds[20] = "";
 //cd - Change directory
 //Use chdir()
 void changeDirectory(char* dir) {
@@ -192,6 +192,7 @@ void readCommand(char** cmd) { //char** array of strings
 
 gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data);
 void displayAfterEnterKey();
+char* concat(const char *s2);
 
 int main(int argc, char *argv[] ) {
     
@@ -228,6 +229,7 @@ int main(int argc, char *argv[] ) {
 
     gtk_text_buffer_insert_with_tags_by_name(textBuffer, &iter, dir, -1, "editability", NULL);
 
+
     g_signal_connect(textfield, "key-press-event", G_CALLBACK(keyPressed), NULL);
 
     gtk_widget_show(window);
@@ -237,18 +239,32 @@ int main(int argc, char *argv[] ) {
 }
 
 gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data){
-
+    
+    char *temp;
     if (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
     {
+        
         gtk_text_buffer_get_start_iter(textBuffer, &start);
         gtk_text_buffer_get_end_iter(textBuffer, &end);
         gtk_text_buffer_apply_tag_by_name(textBuffer, "editability", &start, &end);
-        command = gtk_text_buffer_get_text(textBuffer,&start, &end , False);
+
+
+
+
+
+        memset(cmds,0,strlen(cmds));
+
+        printf("%s\n", cmds);
 
         displayAfterEnterKey(&end);
+        
        
         return True;
     }
+
+    temp = gdk_keyval_name(event->keyval);
+    strcat(cmds, temp);
+    printf("%s\n", cmds);
 
     return False;
 }
@@ -258,7 +274,9 @@ void displayAfterEnterKey(GtkTextIter *iter){
     char s[100];
     char* dir = getcwd(s, sizeof(s));
     strcat(dir, ":");
+   
     gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
     gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dir, -1, "editability", NULL);
 }
+
 
