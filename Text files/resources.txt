@@ -7,3 +7,11 @@
 *https://www.geeksforgeeks.org/making-linux-shell-c/
 
 *https://pubs.opengroup.org/onlinepubs/009695399/basedefs/errno.h.html
+
+*https://www.geeksforgeeks.org/dup-dup2-linux-system-call/
+
+*https://en.wikipedia.org/wiki/File_descriptor
+
+*https://pubs.opengroup.org/onlinepubs/007908799/xsh/open.html
+
+*https://pubs.opengroup.org/onlinepubs/007908799/xsh/open.html
