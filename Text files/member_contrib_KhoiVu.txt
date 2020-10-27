@@ -2,5 +2,8 @@ Khoi's contributions:
 
 *Researched shell commands
 *Researched GUI implementation in C
-*Implemented GUI and the layout of the program
 *lsCommand() method and changeDirectory() method
+*Implemented and designed entire GUI and the layout of the program
+*Implemented and instantiated textfield, textbuffer, keyPressed, etc.--all needed for the GUI
+*Debugging
+*Wrote to the report

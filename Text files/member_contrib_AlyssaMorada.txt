@@ -4,4 +4,6 @@ Alyssa's contributions:
 *Organized team meetings once/twice a week
 *Researched potential shell designs
 *readCommand(), printCurrentDirectory(), exitCommand()
-*created list of test commands and special cases
+*created list of potential test commands and special cases
+*Assisted in debugging
+*updated and wrote to the contribution files, the instructions file, and the report
