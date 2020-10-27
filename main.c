@@ -15,6 +15,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 
 GtkWidget *window;
@@ -151,6 +152,7 @@ void exitCommand() {
 
 //
 void runExecutable(char* execName) {
+    int fd = open("outPut.txt", O_WRONLY|O_CREAT, 0666);
     char *args[] = {execName, NULL};
 
     pid_t pid = fork();
@@ -158,9 +160,28 @@ void runExecutable(char* execName) {
     if(pid == -1) {
         printf("%s\n", strerror(errno));
     } else if(pid == 0) {
+        dup2(fd, 1);
         execvp(args[0], args);
     } else {
         wait(NULL);
+        FILE *outputFile;
+        char c;
+
+        outputFile = fopen("outPut.txt", "r");
+
+        if(outputFile == NULL) {
+            printf("%s\n", strerror(errno));
+            return;
+        }
+
+        c = fgetc(outputFile);
+        while (c != EOF)
+        {
+            printf ("%c", c);
+            c = fgetc(outputFile);
+        }
+        fclose(outputFile);
+        remove("outPut.txt");
     }
 }
 
