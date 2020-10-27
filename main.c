@@ -192,6 +192,7 @@ void readCommand(char** cmd) { //char** array of strings
 
 gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data);
 void displayAfterEnterKey();
+gboolean mouseClicked(GtkWidget *widget, GdkEventButton *event, gpointer data);
 char* concat(const char *s2);
 
 int main(int argc, char *argv[] ) {
@@ -229,8 +230,8 @@ int main(int argc, char *argv[] ) {
 
     gtk_text_buffer_insert_with_tags_by_name(textBuffer, &iter, dir, -1, "editability", NULL);
 
-
     g_signal_connect(textfield, "key-press-event", G_CALLBACK(keyPressed), NULL);
+    g_signal_connect(textfield, "button-press-event", G_CALLBACK(mouseClicked), NULL);
 
     gtk_widget_show(window);
     gtk_main();
@@ -241,11 +242,14 @@ int main(int argc, char *argv[] ) {
 gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data){
     
     char *temp;
+    gtk_text_buffer_get_start_iter(textBuffer, &start);
+    gtk_text_buffer_get_end_iter(textBuffer, &end);
+    
     if (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
     {
         
-        gtk_text_buffer_get_start_iter(textBuffer, &start);
-        gtk_text_buffer_get_end_iter(textBuffer, &end);
+        // gtk_text_buffer_get_start_iter(textBuffer, &start);
+        // gtk_text_buffer_get_end_iter(textBuffer, &end);
         gtk_text_buffer_apply_tag_by_name(textBuffer, "editability", &start, &end);
 
 
@@ -260,6 +264,19 @@ gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data){
         
        
         return True;
+    }
+
+    if(event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_Down){
+        return True;
+    }
+
+    if(event->keyval == GDK_KEY_Left){
+        GtkTextIter temp;
+        gtk_text_buffer_get_iter_at_mark(textBuffer, &temp, gtk_text_buffer_get_insert(textBuffer));
+        int col = gtk_text_iter_get_line_offset(&temp);
+        if((int) strlen(g_get_current_dir()) + 1 == col){
+            return True;
+        }
     }
 
     temp = gdk_keyval_name(event->keyval);
@@ -277,6 +294,13 @@ void displayAfterEnterKey(GtkTextIter *iter){
    
     gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
     gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dir, -1, "editability", NULL);
+
 }
 
+gboolean mouseClicked(GtkWidget *widget, GdkEventButton *event, gpointer data){
+    if(event->type == GDK_BUTTON_PRESS && event->button == 1){
+        return True;
+    }
+    return False;
+}
 
