@@ -25,7 +25,7 @@ GtkBuilder *builder;
 GtkTextTag *textTag;
 GtkTextIter start, end;
 GtkTextIter iter;
-char *command[5], cmds[100] = "";
+char *command[20], cmds[100] = "";
 
 gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data);
 void displayAfterEnterKey();
@@ -41,7 +41,7 @@ void breakString(char* input, char** newArray) {
     }
     
     int i = 0;
-    while(i < 5) {
+    while(i < 20) {
         newArray[i] = strsep(&input, " ");
 
         if(input == NULL) {
@@ -93,32 +93,83 @@ void removeDirectory(char* dirName, GtkTextIter *iter) {
 
 //ls - List contents of pwd
 //Look at dirent.h library
-void lsCommand(char* arg, GtkTextIter *iter) {
+void lsCommand(char** args, GtkTextIter *iter, char* arg) {
     DIR *directory;
-    if(arg == NULL) {
-        directory = opendir(".");
+    if(args[2] == NULL){
+        if(arg == NULL) {
+            directory = opendir(".");
+        }
+        else{
+            directory = opendir(arg);
+        }
+
+        struct dirent *dp;
+
+        if(directory) {
+            while((dp = readdir(directory)) != NULL) {
+                if(strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0) {
+                    continue;
+                }
+                if(dp->d_type == DT_DIR){
+                    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
+                    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dp->d_name, -1, "editability", "lmarg", "blue_fg", NULL);
+                }
+                else if (access(dp->d_name, X_OK) != -1) {
+                    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
+                    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dp->d_name, -1, "editability", "lmarg", "green_fg", NULL);
+                }
+                else{
+                    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
+                    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dp->d_name, -1, "editability", "lmarg", NULL);
+                }
+            }
+        } else {
+            perror(arg);
+            closedir(directory);
+            return;
+        }
+        closedir(directory);
     }
     else{
-        directory = opendir(arg);
-    }
 
-    struct dirent *dp;
+        for(int i =1; args[i] != NULL; i++){
+            gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
+            gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, args[i], -1, "editability", NULL);
+            
+            directory = opendir(args[i]);
+            struct dirent *dp;
 
-    if(directory) {
-        while((dp = readdir(directory)) != NULL) {
-            if(strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0) {
-                continue;
+            if(directory) {
+                while((dp = readdir(directory)) != NULL) {
+                    if(strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0) {
+                        continue;
+                    }
+                    if(dp->d_type == DT_DIR){
+                        gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
+                        gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dp->d_name, -1, "editability", "lmarg", "blue_fg", NULL);
+                    }
+                    else if (access(dp->d_name, X_OK) != -1) {
+                        gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
+                        gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dp->d_name, -1, "editability", "lmarg", "green_fg", NULL);
+                    }
+                    else{
+                        gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
+                        gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dp->d_name, -1, "editability", "lmarg", NULL);
+                    }
+                   
+                }
+            } else {
+                perror(arg);
+                closedir(directory);
+                return;
             }
+            closedir(directory);
 
             gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
-            gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dp->d_name, -1, "editability", NULL);
         }
-    } else {
-        perror(arg);
-        closedir(directory);
-        return;
+       
     }
-    closedir(directory);
+    
 }
 
 //cp - Copy contents from one file to another
@@ -218,7 +269,13 @@ void readCommand(char** cmd, GtkTextIter *iter, char* cmds) { //char** array of 
      
     switch (ownCmd) {
     case 1:
-        changeDirectory(cmd[1], iter); //cmd[1] should have the argument
+        if(cmd[2] == NULL){
+            changeDirectory(cmd[1], iter); //cmd[1] should have the argument
+        }
+        else{
+            gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "\n",-1, "editability", NULL);
+            gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "bash: cd: too many arguments", -1, "editability", NULL);
+        }
         break;
     case 2:
         printCurrentDirectory(iter);
@@ -230,7 +287,7 @@ void readCommand(char** cmd, GtkTextIter *iter, char* cmds) { //char** array of 
         removeDirectory(cmd[1], iter);
         break; 
     case 5:
-        lsCommand(cmd[1], iter);
+        lsCommand(cmd, iter, cmd[1]);
         displayAfterEnterKey(iter);
         break;
     case 6:
@@ -274,7 +331,8 @@ int main(int argc, char *argv[] ) {
     //Thus, to reference the data structure and not the address
     //of the data structure, pointers are used to point to the
     //actual data structure
-
+    
+    
     builder = gtk_builder_new_from_file("terminal.glade");
     window = GTK_WIDGET(gtk_builder_get_object(builder, "terminal_window"));
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
@@ -282,15 +340,21 @@ int main(int argc, char *argv[] ) {
 
     textfield = GTK_WIDGET(gtk_builder_get_object(builder, "terminal_textfield"));
 
+
     textBuffer = gtk_text_view_get_buffer( GTK_TEXT_VIEW(textfield));
 
     gtk_text_buffer_create_tag(textBuffer, "editability", "editable", False, NULL);
-
+    gtk_text_buffer_create_tag(textBuffer, "blue_fg", "foreground", "blue", NULL); 
+    gtk_text_buffer_create_tag(textBuffer, "green_fg", "foreground", "green", NULL); 
+    gtk_text_buffer_create_tag(textBuffer, "lmarg", "left_margin", 5, NULL);
     
     gtk_text_buffer_get_iter_at_offset(textBuffer, &iter, 0);
     
-
-    gtk_text_buffer_insert_with_tags_by_name(textBuffer, &iter, dir, -1, "editability", NULL);
+    char *username = getenv("USER");
+    gtk_text_buffer_insert_with_tags_by_name(textBuffer, &iter, username, -1, "editability", "green_fg", NULL);
+    char direc[100] = "~";
+    strcat(direc, dir);
+    gtk_text_buffer_insert_with_tags_by_name(textBuffer, &iter, direc, -1, "editability", "blue_fg", NULL);
 
     g_signal_connect(textfield, "key-press-event", G_CALLBACK(keyPressed), NULL);
     g_signal_connect(textfield, "button-press-event", G_CALLBACK(mouseClicked), NULL);
@@ -309,22 +373,12 @@ gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data){
     
     if (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
     {
-        
-        // gtk_text_buffer_get_start_iter(textBuffer, &start);
-        // gtk_text_buffer_get_end_iter(textBuffer, &end);
         gtk_text_buffer_apply_tag_by_name(textBuffer, "editability", &start, &end);
-
 
         breakString(cmds, command);
         readCommand(command, &end, cmds);
 
-
-        memset(cmds,0,strlen(cmds));
-
-        printf("%s\n", cmds);
-
-        // displayAfterEnterKey(&end);
-        
+        memset(cmds,0,strlen(cmds));        
        
         return True;
     }
@@ -372,7 +426,11 @@ void displayAfterEnterKey(GtkTextIter *iter){
     strcat(dir, ":");
    
     gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
-    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dir, -1, "editability", NULL);
+    char *username = getenv("USER");
+    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, username, -1, "editability", "green_fg", NULL);
+    char direc[100] = "~";
+    strcat(direc, dir);
+    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, direc, -1, "editability", "blue_fg", NULL);
 
 }
 
