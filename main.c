@@ -38,6 +38,7 @@ void breakString(char* input, char** newArray) {
         newArray[2] = NULL;
         return;
     }
+    
     int i = 0;
     while(i < 5) {
         newArray[i] = strsep(&input, " ");
@@ -53,7 +54,6 @@ void breakString(char* input, char** newArray) {
 //cd - Change directory
 //Use chdir()
 void changeDirectory(char* dir, GtkTextIter *iter) {
-
 
     if(dir != NULL){
         chdir(dir);   
@@ -326,7 +326,18 @@ gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data){
         cmds[strlen(cmds)-1] = '\0';
         return False;
     }
-
+    if(event->keyval == GDK_KEY_space){
+        strcat(cmds, " ");
+        return False;
+    }
+    if(event->keyval == GDK_KEY_Shift_L || event->keyval == GDK_KEY_Shift_R){
+        return False;
+    }
+    if(event->keyval == GDK_KEY_period){
+        strcat(cmds, ".");
+        return False;
+    }
+    
     temp = gdk_keyval_name(event->keyval);
     strcat(cmds, temp);
 
