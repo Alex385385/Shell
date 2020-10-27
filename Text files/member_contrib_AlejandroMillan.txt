@@ -2,4 +2,9 @@ Alejandro's contributions:
 
 *Initialized a GitHub Repository shared with teammates
 *Created initial commits for main class and Makefile
-*copyFile(), removeDirectory(), runExecutable()
+*copyFile(), removeDirectory(), makeDirectory(), runExecutable(), breakString()
+*Debugging
+*Aided in the GUI implementation.
+*Organized files to meet submission requirements
+*wrote the Makefile, resources.txt
+*Wrote to the report
