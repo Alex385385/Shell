@@ -24,8 +24,12 @@ GtkBuilder *builder;
 GtkTextTag *textTag;
 GtkTextIter start, end;
 GtkTextIter iter;
-char *command, cmds[20] = "";
+char *command[5], cmds[100] = "";
 
+gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data);
+void displayAfterEnterKey();
+gboolean mouseClicked(GtkWidget *widget, GdkEventButton *event, gpointer data);
+char* concat(const char *s2);
 
 void breakString(char* input, char** newArray) {
     if(input[0] == '.') {
@@ -34,6 +38,7 @@ void breakString(char* input, char** newArray) {
         newArray[2] = NULL;
         return;
     }
+    
     int i = 0;
     while(i < 5) {
         newArray[i] = strsep(&input, " ");
@@ -48,30 +53,27 @@ void breakString(char* input, char** newArray) {
 
 //cd - Change directory
 //Use chdir()
-void changeDirectory(char* dir) {
+void changeDirectory(char* dir, GtkTextIter *iter) {
 
-    char s[100];
-    char *ptr;
-
-    chdir(dir);
-
-    // display new current dir
-    ptr = getcwd(s, sizeof(s));
-
-    free(ptr);
+    if(dir != NULL){
+        chdir(dir);   
+    }
+   
+    // display current directory
+    displayAfterEnterKey(iter);
 }
 
 //pwd - Present Working directory
 // Use getcwd()
-void printCurrentDirectory() {
+void printCurrentDirectory(GtkTextIter *iter) {
 
-    char s[100];
-    printf("%s\n", getcwd(s, sizeof(s)));
+    displayAfterEnterKey(iter);
+
 }
 
 //mkdir - Make a directory (Alerts if already exists)
 //Use mkdir()
-void makeDirectory(char* name) {
+void makeDirectory(char* name, GtkTextIter *iter) {
     int value;
     value = mkdir(name, 0777);
     if(value == -1) {
@@ -81,7 +83,7 @@ void makeDirectory(char* name) {
 
 //rmdir - Remove the directory (Alerts if no such file or directory)
 //Use rmdir()
-void removeDirectory(char* dirName) {
+void removeDirectory(char* dirName, GtkTextIter *iter) {
     int status = rmdir(dirName);
     if(status == -1) {
         printf("%s\n", strerror(errno));
@@ -90,7 +92,7 @@ void removeDirectory(char* dirName) {
 
 //ls - List contents of pwd
 //Look at dirent.h library
-void lsCommand(char* arg) {
+void lsCommand(char* arg, GtkTextIter *iter) {
     DIR *directory;
     if(arg == NULL) {
         directory = opendir(".");
@@ -106,7 +108,9 @@ void lsCommand(char* arg) {
             if(strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0) {
                 continue;
             }
-           // printf("%s\n", dp->d_name);
+
+            gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
+            gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dp->d_name, -1, "editability", NULL);
         }
     } else {
         perror(arg);
@@ -164,10 +168,11 @@ void runExecutable(char* execName) {
     }
 }
 
-void readCommand(char** cmd) { //char** array of strings
-    int numOfCmds = 7;
+void readCommand(char** cmd, GtkTextIter *iter, char* cmds) { //char** array of strings
+    int numOfCmds = 8;
     int ownCmd = 0;
     char* cmdList[numOfCmds];
+    char* arr = ": command not found";
 
     cmdList[0] = "cd";
     cmdList[1] = "pwd";
@@ -192,19 +197,20 @@ void readCommand(char** cmd) { //char** array of strings
      
     switch (ownCmd) {
     case 1:
-        changeDirectory(cmd[1]); //cmd[1] should have the argument
+        changeDirectory(cmd[1], iter); //cmd[1] should have the argument
         break;
     case 2:
-        printCurrentDirectory();
+        printCurrentDirectory(iter);
         break;
     case 3:
-        makeDirectory(cmd[1]);
+        makeDirectory(cmd[1], iter);
         break;
     case 4:
-        removeDirectory(cmd[1]);
-        break;
+        removeDirectory(cmd[1], iter);
+        break; 
     case 5:
-        lsCommand(cmd[1]);
+        lsCommand(cmd[1], iter);
+        displayAfterEnterKey(iter);
         break;
     case 6:
         copyFile(cmd[1], cmd[2]);
@@ -216,6 +222,12 @@ void readCommand(char** cmd) { //char** array of strings
         exitCommand();
         break;
     default:
+        
+        strcat(cmds, arr);
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "\n",-1, "editability", NULL);
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, cmds, -1, "editability", NULL);
+        displayAfterEnterKey(iter);
+
         break;
     } 
 }
@@ -223,9 +235,6 @@ void readCommand(char** cmd) { //char** array of strings
 
 //char *argv[] is an array of char pointers
 
-gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data);
-void displayAfterEnterKey();
-char* concat(const char *s2);
 
 int main(int argc, char *argv[] ) {
     
@@ -262,8 +271,8 @@ int main(int argc, char *argv[] ) {
 
     gtk_text_buffer_insert_with_tags_by_name(textBuffer, &iter, dir, -1, "editability", NULL);
 
-
     g_signal_connect(textfield, "key-press-event", G_CALLBACK(keyPressed), NULL);
+    g_signal_connect(textfield, "button-press-event", G_CALLBACK(mouseClicked), NULL);
 
     gtk_widget_show(window);
     gtk_main();
@@ -274,30 +283,63 @@ int main(int argc, char *argv[] ) {
 gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data){
     
     char *temp;
+    gtk_text_buffer_get_start_iter(textBuffer, &start);
+    gtk_text_buffer_get_end_iter(textBuffer, &end);
+    
     if (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
     {
         
-        gtk_text_buffer_get_start_iter(textBuffer, &start);
-        gtk_text_buffer_get_end_iter(textBuffer, &end);
+        // gtk_text_buffer_get_start_iter(textBuffer, &start);
+        // gtk_text_buffer_get_end_iter(textBuffer, &end);
         gtk_text_buffer_apply_tag_by_name(textBuffer, "editability", &start, &end);
 
 
-
+        breakString(cmds, command);
+        readCommand(command, &end, cmds);
 
 
         memset(cmds,0,strlen(cmds));
 
         printf("%s\n", cmds);
 
-        displayAfterEnterKey(&end);
+        // displayAfterEnterKey(&end);
         
        
         return True;
     }
 
+    if(event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_Down){
+        return True;
+    }
+
+    if(event->keyval == GDK_KEY_Left){
+        GtkTextIter temp;
+        gtk_text_buffer_get_iter_at_mark(textBuffer, &temp, gtk_text_buffer_get_insert(textBuffer));
+        int col = gtk_text_iter_get_line_offset(&temp);
+        if((int) strlen(g_get_current_dir()) + 1 == col){
+            return True;
+        }
+    }
+
+    if(event->keyval == GDK_KEY_BackSpace){
+        
+        cmds[strlen(cmds)-1] = '\0';
+        return False;
+    }
+    if(event->keyval == GDK_KEY_space){
+        strcat(cmds, " ");
+        return False;
+    }
+    if(event->keyval == GDK_KEY_Shift_L || event->keyval == GDK_KEY_Shift_R){
+        return False;
+    }
+    if(event->keyval == GDK_KEY_period){
+        strcat(cmds, ".");
+        return False;
+    }
+    
     temp = gdk_keyval_name(event->keyval);
     strcat(cmds, temp);
-    printf("%s\n", cmds);
 
     return False;
 }
@@ -310,6 +352,13 @@ void displayAfterEnterKey(GtkTextIter *iter){
    
     gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
     gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dir, -1, "editability", NULL);
+
 }
 
+gboolean mouseClicked(GtkWidget *widget, GdkEventButton *event, gpointer data){
+    if(event->type == GDK_BUTTON_PRESS && event->button == 1){
+        return True;
+    }
+    return False;
+}
 
