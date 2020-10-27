@@ -25,6 +25,27 @@ GtkTextTag *textTag;
 GtkTextIter start, end;
 GtkTextIter iter;
 char *command, cmds[20] = "";
+
+
+void breakString(char* input, char** newArray) {
+    if(input[0] == '.') {
+        newArray[0] = "./";
+        newArray[1] = input;
+        newArray[2] = NULL;
+        return;
+    }
+    int i = 0;
+    while(i < 5) {
+        newArray[i] = strsep(&input, " ");
+
+        if(input == NULL) {
+            newArray[i + 1] = strsep(&input, " ");
+            break;
+        }
+        i++;
+    }
+}
+
 //cd - Change directory
 //Use chdir()
 void changeDirectory(char* dir) {
@@ -71,17 +92,14 @@ void removeDirectory(char* dirName) {
 //Look at dirent.h library
 void lsCommand(char* arg) {
     DIR *directory;
-    directory = opendir(arg);
-    if(!directory) {
-        perror(arg);
-        return;
-    }
-    if(directory == NULL){
+    if(arg == NULL) {
         directory = opendir(".");
+    }
+    else{
+        directory = opendir(arg);
     }
 
     struct dirent *dp;
-
 
     if(directory) {
         while((dp = readdir(directory)) != NULL) {
@@ -90,6 +108,10 @@ void lsCommand(char* arg) {
             }
            // printf("%s\n", dp->d_name);
         }
+    } else {
+        perror(arg);
+        closedir(directory);
+        return;
     }
     closedir(directory);
 }
@@ -153,7 +175,8 @@ void readCommand(char** cmd) { //char** array of strings
     cmdList[3] = "rmdir";
     cmdList[4] = "ls";
     cmdList[5] = "cp";
-    cmdList[6] = "exit";
+    cmdList[6] = "./";
+    cmdList[7] = "exit";
 
 
     if (sizeof(cmd) == 0) {
@@ -170,18 +193,28 @@ void readCommand(char** cmd) { //char** array of strings
     switch (ownCmd) {
     case 1:
         changeDirectory(cmd[1]); //cmd[1] should have the argument
+        break;
     case 2:
         printCurrentDirectory();
+        break;
     case 3:
         makeDirectory(cmd[1]);
+        break;
     case 4:
         removeDirectory(cmd[1]);
+        break;
     case 5:
         lsCommand(cmd[1]);
+        break;
     case 6:
-        //copyFile(cmd[1]);
+        copyFile(cmd[1], cmd[2]);
+        break;
     case 7:
+        runExecutable(cmd[1]);
+        break;
+    case 8:
         exitCommand();
+        break;
     default:
         break;
     } 
