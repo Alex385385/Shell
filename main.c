@@ -1,3 +1,6 @@
+// Assignemnt 4 
+// Team members: Alex, Khoi, Alyssa 
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
