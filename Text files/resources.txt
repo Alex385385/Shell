@@ -15,3 +15,7 @@
 *https://pubs.opengroup.org/onlinepubs/007908799/xsh/open.html
 
 *https://pubs.opengroup.org/onlinepubs/007908799/xsh/open.html
+
+*http://zetcode.com/gui/gtk2/gtktextview/
+
+*https://developer.gnome.org/gtk3/stable/

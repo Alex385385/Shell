@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <glib.h>
-//#include <gtk/gtk.h>
 #include <gtk-3.0/gtk/gtk.h>
 #include <gtk-3.0/gtk/gtkx.h>
 #include <signal.h>
@@ -26,6 +25,8 @@ GtkTextTag *textTag;
 GtkTextIter start, end;
 GtkTextIter iter;
 char *command[20], cmds[100] = "";
+extern int errno ;
+
 
 gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data);
 void displayAfterEnterKey();
@@ -55,11 +56,19 @@ void breakString(char* input, char** newArray) {
 //cd - Change directory
 //Use chdir()
 void changeDirectory(char* dir, GtkTextIter *iter) {
-
+    int errnum;
     if(dir != NULL){
-        chdir(dir);   
+        if(chdir(dir) == -1){
+            errnum = errno;
+            char error[100] = "bash: cd: ";
+            strcat(error, dir);
+            strcat(error, ": ");
+            strcat(error, strerror( errnum ));
+            gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
+            gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, error, -1, "editability", NULL);
+        } 
     }
-   
+
     // display current directory
     displayAfterEnterKey(iter);
 }
@@ -78,7 +87,9 @@ void makeDirectory(char* name, GtkTextIter *iter) {
     int value;
     value = mkdir(name, 0777);
     if(value == -1) {
-        printf("%s\n", strerror(errno));
+        //printf("%s\n", strerror(errno));
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "\n",-1, "editability", NULL);
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, strerror(errno), -1, "editability", NULL);
     }
 }
 
@@ -87,7 +98,9 @@ void makeDirectory(char* name, GtkTextIter *iter) {
 void removeDirectory(char* dirName, GtkTextIter *iter) {
     int status = rmdir(dirName);
     if(status == -1) {
-        printf("%s\n", strerror(errno));
+        //printf("%s\n", strerror(errno));
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "\n",-1, "editability", NULL);
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, strerror(errno), -1, "editability", NULL);
     }
 }
 
@@ -95,6 +108,7 @@ void removeDirectory(char* dirName, GtkTextIter *iter) {
 //Look at dirent.h library
 void lsCommand(char** args, GtkTextIter *iter, char* arg) {
     DIR *directory;
+    int errnum;
     if(args[2] == NULL){
         if(arg == NULL) {
             directory = opendir(".");
@@ -124,7 +138,14 @@ void lsCommand(char** args, GtkTextIter *iter, char* arg) {
                 }
             }
         } else {
-            perror(arg);
+            errnum = errno;
+            char error[100] = "ls: cannot access ";
+            strcat(error, "'");
+            strcat(error, arg);
+            strcat(error, "':");
+            strcat(error, strerror( errnum ));
+            gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
+            gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, error, -1, "editability", NULL);
             closedir(directory);
             return;
         }
@@ -159,7 +180,14 @@ void lsCommand(char** args, GtkTextIter *iter, char* arg) {
                    
                 }
             } else {
-                perror(arg);
+                errnum = errno;
+                char error[100] = "ls: cannot access ";
+                strcat(error, "'");
+                strcat(error, args[i]);
+                strcat(error, "':");
+                strcat(error, strerror( errnum ));
+                gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
+                gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, error, -1, "editability", NULL);
                 closedir(directory);
                 return;
             }
@@ -179,14 +207,18 @@ void copyFile(char* parentName, char* childName) {
 
     parentFile = fopen(parentName, "rb");
     if (parentFile == NULL) {
-        perror("Error ");
+        //perror("Error ");
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "\n",-1, "editability", NULL);
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, strerror(errno), -1, "editability", NULL);
         return;
     }
 
     childFile = fopen(childName, "wb");
 
     if(childFile == NULL) {
-        perror("Error ");
+        //perror("Error ");
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "\n",-1, "editability", NULL);
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, strerror(errno), -1, "editability", NULL);
         return;
     }
 
@@ -213,7 +245,9 @@ void runExecutable(char* execName) {
     pid_t pid = fork();
 
     if(pid == -1) {
-        printf("%s\n", strerror(errno));
+        //printf("%s\n", strerror(errno));
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "\n",-1, "editability", NULL);
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, strerror(errno), -1, "editability", NULL);
     } else if(pid == 0) {
         dup2(fd, 1);
         execvp(args[0], args);
@@ -229,10 +263,13 @@ void runExecutable(char* execName) {
             return;
         }
 
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "\n",-1, "editability", NULL);
+
         c = fgetc(outputFile);
         while (c != EOF)
         {
-            printf ("%c", c);
+            //printf ("%c", c);
+            gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, &c, -1, "editability", NULL);
             c = fgetc(outputFile);
         }
         fclose(outputFile);

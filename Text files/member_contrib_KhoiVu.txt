@@ -6,4 +6,6 @@ Khoi's contributions:
 *Implemented and designed entire GUI and the layout of the program
 *Implemented and instantiated textfield, textbuffer, keyPressed, etc.--all needed for the GUI
 *Debugging
+*Maintain the terminal look and feel to the GUI
+*Integrate all methods to the GUI. Make sure all methods work with the GUI
 *Wrote to the report
