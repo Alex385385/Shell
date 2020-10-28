@@ -229,6 +229,9 @@ void copyFile(char* parentName, char* childName) {
     for(int i = 0; i < fileLength; i++) {
         fputc(fgetc(parentFile), childFile);
     }
+
+    displayAfterEnterKey();
+
 }
 
 //exit
@@ -242,7 +245,8 @@ void runExecutable(char* execName) {
     int fd = open("outPut.txt", O_WRONLY|O_CREAT, 0666);
     char *args[] = {execName, NULL};
 
-    pid_t pid = fork();
+
+    pid_t pid = vfork();
 
     if(pid == -1) {
         //printf("%s\n", strerror(errno));
@@ -268,7 +272,6 @@ void runExecutable(char* execName) {
         c = fgetc(outputFile);
         while (c != EOF)
         {
-            //printf ("%c", c);
             gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, &c, -1, "editability", NULL);
             c = fgetc(outputFile);
         }
@@ -431,6 +434,10 @@ gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data){
         if((int) strlen(g_get_current_dir()) + 1 == col){
             return True;
         }
+    }
+    if(event->keyval == GDK_KEY_slash){
+        strcat(cmds, "/");
+        return False;
     }
 
     if(event->keyval == GDK_KEY_BackSpace){
