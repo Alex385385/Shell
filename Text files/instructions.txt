@@ -27,4 +27,4 @@ Now you are able to run our shell with the assignment's supported commands:
 
 *exit - will exit the shell.
 
-*./<executable name> - this command runs executables, but our shell will write the output to the output.txt file and gets deleted once finished.
+*./<executable name> - this command runs executables and prints the output in the terminal.
