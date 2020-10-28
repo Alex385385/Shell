@@ -82,6 +82,7 @@ void changeDirectory(char* dir, GtkTextIter *iter) {
 
     // display current directory
     displayAfterEnterKey(iter);
+    return;
 }
 
 //pwd - Present Working directory
@@ -96,6 +97,7 @@ void printCurrentDirectory(GtkTextIter *iter) {
     gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dir, -1, "editability", NULL);
 
     displayAfterEnterKey(iter);
+    return;
 
 }
 
@@ -110,6 +112,7 @@ void makeDirectory(char* name, GtkTextIter *iter) {
         gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, strerror(errno), -1, "editability", NULL);
     }
     displayAfterEnterKey(iter);
+    return;
 }
 
 //rmdir - Remove the directory (Alerts if no such file or directory)
@@ -122,6 +125,8 @@ void removeDirectory(char* dirName, GtkTextIter *iter) {
         gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, strerror(errno), -1, "editability", NULL);
     }
     displayAfterEnterKey(iter);
+    return;
+
 }
 
 //ls - List contents of pwd
@@ -214,6 +219,7 @@ void lsCommand(char** args, GtkTextIter *iter, char* arg) {
         }
        
     }
+    return;
     
 }
 
@@ -249,7 +255,7 @@ void copyFile(char* parentName, char* childName, GtkTextIter *iter) {
 
 
     displayAfterEnterKey(iter);
-    
+    return;
 
 }
 
