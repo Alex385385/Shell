@@ -219,14 +219,14 @@ void lsCommand(char** args, GtkTextIter *iter, char* arg) {
 
 //cp - Copy contents from one file to another
 //Use fgetc() and fputc()
-void copyFile(char* parentName, char* childName) {
+void copyFile(char* parentName, char* childName, GtkTextIter *iter) {
     FILE *parentFile, *childFile;
 
     parentFile = fopen(parentName, "rb");
     if (parentFile == NULL) {
         //perror("Error ");
-        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "\n",-1, "editability", NULL);
-        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, strerror(errno), -1, "editability", NULL);
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n",-1, "editability", NULL);
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, strerror(errno), -1, "editability", NULL);
         return;
     }
 
@@ -234,8 +234,8 @@ void copyFile(char* parentName, char* childName) {
 
     if(childFile == NULL) {
         //perror("Error ");
-        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "\n",-1, "editability", NULL);
-        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, strerror(errno), -1, "editability", NULL);
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n",-1, "editability", NULL);
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, strerror(errno), -1, "editability", NULL);
         return;
     }
 
@@ -248,8 +248,7 @@ void copyFile(char* parentName, char* childName) {
     }
 
 
-    fclose(parentFile);
-    fclose(childFile);
+    displayAfterEnterKey(iter);
     
 
 }
@@ -261,7 +260,7 @@ void exitCommand() {
 }
 
 //
-void runExecutable(char* execName) {
+void runExecutable(char* execName, GtkTextIter *iter) {
     int fd = open("outPut.txt", O_WRONLY|O_CREAT, 0666);
     char *args[] = {execName, NULL};
 
@@ -270,8 +269,8 @@ void runExecutable(char* execName) {
 
     if(pid == -1) {
         //printf("%s\n", strerror(errno));
-        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "\n",-1, "editability", NULL);
-        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, strerror(errno), -1, "editability", NULL);
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n",-1, "editability", NULL);
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, strerror(errno), -1, "editability", NULL);
     } else if(pid == 0) {
         dup2(fd, 1);
         execvp(args[0], args);
@@ -287,17 +286,18 @@ void runExecutable(char* execName) {
             return;
         }
 
-        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "\n",-1, "editability", NULL);
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n",-1, "editability", NULL);
 
         c = fgetc(outputFile);
         while (c != EOF)
         {
-            gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, &c, -1, "editability", NULL);
+            gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, &c, -1, "editability", NULL);
             c = fgetc(outputFile);
         }
         fclose(outputFile);
         remove("outPut.txt");
     }
+
 }
 
 void readCommand(char** cmd, GtkTextIter *iter, char* cmds) { //char** array of strings
@@ -351,11 +351,10 @@ void readCommand(char** cmd, GtkTextIter *iter, char* cmds) { //char** array of 
         displayAfterEnterKey(iter);
         break;
     case 6:
-        copyFile(cmd[1], cmd[2]);
-        displayAfterEnterKey(iter);
+        copyFile(cmd[1], cmd[2], iter);
         break;
     case 7:
-        runExecutable(cmd[1]);
+        runExecutable(cmd[1], iter);
         break;
     case 8:
         exitCommand();
