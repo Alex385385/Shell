@@ -110,7 +110,7 @@ void lsCommand(char** args, GtkTextIter *iter, char* arg) {
     DIR *directory;
     int errnum;
     if(args[2] == NULL){
-        if(arg == NULL) {
+        if((arg == NULL) || (strcmp(arg, " ") == 0)) {
             directory = opendir(".");
         }
         else{
