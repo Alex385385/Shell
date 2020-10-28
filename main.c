@@ -264,7 +264,7 @@ void exitCommand() {
 }
 
 //
-void runExecutable(char* execName) {
+void runExecutable(char* execName, GtkTextIter *iter) {
     int fd = open("outPut.txt", O_WRONLY|O_CREAT, 0666);
     char *args[] = {execName, NULL};
 
@@ -281,7 +281,7 @@ void runExecutable(char* execName) {
     } else {
         wait(NULL);
         FILE *outputFile;
-        char c;
+        char c[1000];
 
         outputFile = fopen("outPut.txt", "r");
 
@@ -296,23 +296,24 @@ void runExecutable(char* execName) {
         int fileLength = (int)ftell(outputFile);
         fseek(outputFile, 0, SEEK_SET);
 
-        char *result = malloc(fileLength + 1);
+        
+        fgets(c, fileLength+1,outputFile);
 
-        c = fgetc(outputFile);
-        strcpy(result, &c);
-        while (c != EOF)
-        {
-            //gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, &c, -1, "editability", NULL);
-            c = fgetc(outputFile);
-            strcat(result, &c);
-        }
+        // while (c != EOF)
+        // {
+        //     //gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, &c, -1, "editability", NULL);
+            
+        //     c = fgets(outputFile);
 
-        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "\n",-1, "editability", NULL);
-        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, result, -1, "editability", NULL);
+        // }
+
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n",-1, "editability", NULL);
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, c, -1, "editability", NULL);
 
         fclose(outputFile);
         remove("outPut.txt");
     }
+
 }
 
 void readCommand(char** cmd, GtkTextIter *iter, char* cmds) { //char** array of strings
@@ -370,7 +371,8 @@ void readCommand(char** cmd, GtkTextIter *iter, char* cmds) { //char** array of 
         displayAfterEnterKey(iter);
         break;
     case 7:
-        runExecutable(cmd[1]);
+        runExecutable(cmd[1], iter);
+        displayAfterEnterKey(iter);
         break;
     case 8:
         exitCommand();
