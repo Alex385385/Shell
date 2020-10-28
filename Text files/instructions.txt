@@ -11,7 +11,7 @@ Now you are able to run our shell with the assignment's supported commands:
 
 **DISCLAIMER** any key input will be read in sequence and will be passed into the argument. Commands should be typed character for character.
 	-- Only some keys are handled --
-	For example: [command]ls does not read as 'ls' even though that is what is displayed in the shell.
+	For example: [command]ls does not read as 'ls' even though that is what is displayed in the shell and will result in error.
 
 *cd <directory name> - will change your directory if it exists under the parent folder. Supports '..'
 
@@ -27,4 +27,4 @@ Now you are able to run our shell with the assignment's supported commands:
 
 *exit - will exit the shell.
 
-*'./<executable name> > <new file name>.txt' - this command runs executables, but our shell will write the output to a txt file.
+*./<executable name> - this command runs executables, but our shell will write the output to the output.txt file and gets deleted once finished.
