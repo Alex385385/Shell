@@ -26,12 +26,23 @@ GtkTextIter start, end;
 GtkTextIter iter;
 char *command[20], cmds[100] = "";
 extern int errno ;
+int lineOffset = 0;
 
 
 gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data);
 void displayAfterEnterKey();
 gboolean mouseClicked(GtkWidget *widget, GdkEventButton *event, gpointer data);
 char* concat(const char *s2);
+
+void removeChar(char *str, char garbage) {
+
+    char *src, *dst;
+    for (src = dst = str; *src != '\0'; src++) {
+        *dst = *src;
+        if (*dst != garbage) dst++;
+    }
+    *dst = '\0';
+}
 
 void breakString(char* input, char** newArray) {
     if(input[0] == '.') {
@@ -76,6 +87,13 @@ void changeDirectory(char* dir, GtkTextIter *iter) {
 //pwd - Present Working directory
 // Use getcwd()
 void printCurrentDirectory(GtkTextIter *iter) {
+    
+    char s[100];
+    char* dir = getcwd(s, sizeof(s));
+    
+    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n",-1, "editability", NULL);
+
+    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dir, -1, "editability", NULL);
 
     displayAfterEnterKey(iter);
 
@@ -91,6 +109,7 @@ void makeDirectory(char* name, GtkTextIter *iter) {
         gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "\n",-1, "editability", NULL);
         gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, strerror(errno), -1, "editability", NULL);
     }
+    displayAfterEnterKey(iter);
 }
 
 //rmdir - Remove the directory (Alerts if no such file or directory)
@@ -102,6 +121,7 @@ void removeDirectory(char* dirName, GtkTextIter *iter) {
         gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "\n",-1, "editability", NULL);
         gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, strerror(errno), -1, "editability", NULL);
     }
+    displayAfterEnterKey(iter);
 }
 
 //ls - List contents of pwd
@@ -109,13 +129,10 @@ void removeDirectory(char* dirName, GtkTextIter *iter) {
 void lsCommand(char** args, GtkTextIter *iter, char* arg) {
     DIR *directory;
     int errnum;
-    if(args[2] == NULL){
-        if(arg == NULL) {
-            directory = opendir(".");
-        }
-        else{
-            directory = opendir(arg);
-        }
+    
+    if(arg == NULL){
+        
+        directory = opendir(".");
 
         struct dirent *dp;
 
@@ -126,15 +143,15 @@ void lsCommand(char** args, GtkTextIter *iter, char* arg) {
                 }
                 if(dp->d_type == DT_DIR){
                     gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
-                    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dp->d_name, -1, "editability", "lmarg", "blue_fg", NULL);
+                    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dp->d_name, -1, "editability", "blue_fg", NULL);
                 }
                 else if (access(dp->d_name, X_OK) != -1) {
                     gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
-                    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dp->d_name, -1, "editability", "lmarg", "green_fg", NULL);
+                    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dp->d_name, -1, "editability", "green_fg", NULL);
                 }
                 else{
                     gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
-                    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dp->d_name, -1, "editability", "lmarg", NULL);
+                    gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, dp->d_name, -1, "editability", NULL);
                 }
             }
         } else {
@@ -151,7 +168,7 @@ void lsCommand(char** args, GtkTextIter *iter, char* arg) {
         }
         closedir(directory);
     }
-    else{
+    else {
 
         for(int i =1; args[i] != NULL; i++){
             gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, "\n", -1, "editability", NULL);
@@ -230,7 +247,10 @@ void copyFile(char* parentName, char* childName) {
         fputc(fgetc(parentFile), childFile);
     }
 
-    displayAfterEnterKey();
+
+    fclose(parentFile);
+    fclose(childFile);
+    
 
 }
 
@@ -332,6 +352,7 @@ void readCommand(char** cmd, GtkTextIter *iter, char* cmds) { //char** array of 
         break;
     case 6:
         copyFile(cmd[1], cmd[2]);
+        displayAfterEnterKey(iter);
         break;
     case 7:
         runExecutable(cmd[1]);
@@ -386,7 +407,7 @@ int main(int argc, char *argv[] ) {
     gtk_text_buffer_create_tag(textBuffer, "editability", "editable", False, NULL);
     gtk_text_buffer_create_tag(textBuffer, "blue_fg", "foreground", "blue", NULL); 
     gtk_text_buffer_create_tag(textBuffer, "green_fg", "foreground", "green", NULL); 
-    gtk_text_buffer_create_tag(textBuffer, "lmarg", "left_margin", 5, NULL);
+    gtk_text_buffer_create_tag(textBuffer, "lmarg", "left_margin", 10, NULL);
     
     gtk_text_buffer_get_iter_at_offset(textBuffer, &iter, 0);
     
@@ -395,6 +416,7 @@ int main(int argc, char *argv[] ) {
     char direc[100] = "~";
     strcat(direc, dir);
     gtk_text_buffer_insert_with_tags_by_name(textBuffer, &iter, direc, -1, "editability", "blue_fg", NULL);
+    lineOffset = gtk_text_iter_get_line_offset(&iter);
 
     g_signal_connect(textfield, "key-press-event", G_CALLBACK(keyPressed), NULL);
     g_signal_connect(textfield, "button-press-event", G_CALLBACK(mouseClicked), NULL);
@@ -434,6 +456,7 @@ gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data){
         if((int) strlen(g_get_current_dir()) + 1 == col){
             return True;
         }
+        return False;
     }
     if(event->keyval == GDK_KEY_slash){
         strcat(cmds, "/");
@@ -441,8 +464,14 @@ gboolean keyPressed(GtkWidget *widget, GdkEventKey *event, gpointer data){
     }
 
     if(event->keyval == GDK_KEY_BackSpace){
+        GtkTextIter temp;
+        gtk_text_buffer_get_iter_at_mark(textBuffer, &temp, gtk_text_buffer_get_insert(textBuffer));
+        int col = gtk_text_iter_get_line_offset(&temp);
         
-        cmds[strlen(cmds)-1] = '\0';
+        int translatedOffset = (col % lineOffset) -1;
+        
+        memmove(&cmds[translatedOffset], &cmds[translatedOffset + 1], strlen(cmds) - translatedOffset);
+
         return False;
     }
     if(event->keyval == GDK_KEY_space){
@@ -475,7 +504,12 @@ void displayAfterEnterKey(GtkTextIter *iter){
     char direc[100] = "~";
     strcat(direc, dir);
     gtk_text_buffer_insert_with_tags_by_name(textBuffer, iter, direc, -1, "editability", "blue_fg", NULL);
+    
+    GtkTextIter temp;
+    gtk_text_buffer_get_iter_at_mark(textBuffer, &temp, gtk_text_buffer_get_insert(textBuffer));
+    lineOffset = gtk_text_iter_get_line_offset(&temp);
 
+    gtk_text_buffer_place_cursor (textBuffer, iter);
 }
 
 gboolean mouseClicked(GtkWidget *widget, GdkEventButton *event, gpointer data){
@@ -484,4 +518,6 @@ gboolean mouseClicked(GtkWidget *widget, GdkEventButton *event, gpointer data){
     }
     return False;
 }
+
+
 
