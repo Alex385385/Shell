@@ -287,14 +287,28 @@ void runExecutable(char* execName) {
             return;
         }
 
-        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "\n",-1, "editability", NULL);
+
+
+        fseek(outputFile,0, SEEK_END);
+        int fileLength = (int)ftell(outputFile);
+        fseek(outputFile, 0, SEEK_SET);
+        //har stringOut[fileLength];
+
+        char *result = malloc(fileLength + 1);
 
         c = fgetc(outputFile);
+        strcpy(result, &c);
         while (c != EOF)
         {
-            gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, &c, -1, "editability", NULL);
+
+            //gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, stringOut, -1, "editability", NULL);
             c = fgetc(outputFile);
+            strcat(result, &c);
         }
+
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, "\n",-1, "editability", NULL);
+        gtk_text_buffer_insert_with_tags_by_name(textBuffer, &end, result, -1, "editability", NULL);
+
         fclose(outputFile);
         remove("outPut.txt");
     }
